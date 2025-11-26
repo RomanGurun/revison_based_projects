@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:practiceforgrowth/screens/profile_screen.dart';
-import 'package:practiceforgrowth/widgets/common_app_bar.dart';
+import 'package:totto/screens/profile_screen.dart';
+import 'package:totto/widgets/common_app_bar.dart';
+
+import '../widgets/common_app_bar.dart';
 
 
 class HomeScreen extends StatelessWidget{

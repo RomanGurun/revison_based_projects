@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:practiceforgrowth/widgets/common_app_bar.dart'; // import the CommonAppBar
+import 'package:totto/widgets/common_app_bar.dart'; // import the CommonAppBar
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});

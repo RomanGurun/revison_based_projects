@@ -83,42 +83,71 @@
 //
 //
 //
-class CreateChatPage extens ConsumerstatefulWidget{
+// class CreateChatPage extens ConsumerstatefulWidget{
+//
+//
+//   final UserProfile otherUser;
+//   finl Ordeer? initialOrder;
+//
+//
+//   CreateChatPage({
+//   super.key,
+// required this.otherUser,
+// this.initialOrder,
+// })
+//
+// @override
+// ConsumerState<CreateChatPage> createState() =>_CreateChatPage();
+//
+// }
+// class _CreateChaPageState extends ConsumerState<CreateChatPage>{
+//   @override
+// void initState(){
+//     super.initState();
+//
+//     WidgetsBinding.instance.addPostFrameCallback((_){
+// _findingOrCreateChat();
+//
+//
+// })
+//
+//    @override Widget
+// build(BuildContext context){
+//       ref.listen<PersonalChange>
+//
+// }
+// }
+//
+//
+//
+//
+// }
 
 
-  final UserProfile otherUser;
-  finl Ordeer? initialOrder;
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'pages/chat_page.dart';
 
-
-  CreateChatPage({
-  super.key,
-required this.otherUser,
-this.initialOrder,
-})
-
-@override
-ConsumerState<CreateChatPage> createState() =>_CreateChatPage();
-
+void main() {
+  runApp(const ProviderScope(child: MyApp()));
 }
-class _CreateChaPageState extends ConsumerState<CreateChatPage>{
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
-void initState(){
-    super.initState();
-
-    WidgetsBinding.instance.addPostFrameCallback((_){
-_findingOrCreateChat();
-
-
-})
-
-   @override Widget
-build(BuildContext context){
-      ref.listen<PersonalChange>
-
-}
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Chat Groups App',
+      theme: ThemeData(primarySwatch: Colors.red),
+      home: const ChatPage(),
+    );
+  }
 }
 
 
 
 
-}
+
+
+

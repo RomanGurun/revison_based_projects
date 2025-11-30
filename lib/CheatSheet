@@ -1,0 +1,50 @@
+// My Notes: where vs indexWhere
+
+// where() - returns matching items
+final matchingTasks = tasks.where((t) => t.id == 2); // Returns Iterable<Task>
+
+// indexWhere() - returns position number
+final position = tasks.indexWhere((t) => t.id == 2); // Returns int (0,1,2... or -1)
+
+// Remember: indexWhere gives INDEX (position), not true/false!
+
+
+
+✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+
+class TaskRepository {
+  List<Task> _tasks = []; // Private
+
+  Future<void> deleteTask(String id) async {
+    // We can add validation, logging, etc.
+    if (id.isEmpty) throw Exception('Invalid ID');
+    _tasks.removeWhere((t) => t.id == id);
+  }
+}
+
+// Somewhere else:
+repository._tasks.clear(); // ❌ ERROR! Can't access private variable
+repository.deleteTask('123'); // ✅ Must use the method
+class TaskRepository {
+  List<Task> _tasks = []; // Private
+
+  Future<void> deleteTask(String id) async {
+    // We can add validation, logging, etc.
+    if (id.isEmpty) throw Exception('Invalid ID');
+    _tasks.removeWhere((t) => t.id == id);
+  }
+}
+
+// Somewhere else:
+repository._tasks.clear(); // ❌ ERROR! Can't access private variable
+repository.deleteTask('123'); // ✅ Must use the method
+
+
+✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+
+final Ref _ref;
+//    ↑
+//    This 'Ref' is a CLASS that's already defined in the Riverpod library
+✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅ ✅
+
+

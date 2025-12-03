@@ -1350,3 +1350,702 @@ content:  const Text("Task Created Successfully 1000000"),
     }
     }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ///////this is a changes ,made by me
+    import 'package:flutter/material.dart';
+    import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+// ============================================================================
+// MODELS & REPOSITORY
+// ============================================================================
+
+    class Task {
+    final String ids;
+    final String title;
+    final String description;
+    final String status;
+
+    Task({
+    required this.ids,
+    required this.title,
+    required this.description,
+    required this.status,
+    });
+
+    factory Task.fromJson(Map<String, dynamic> json) {
+    return Task(
+    ids: json['id'].toString(),
+    title: json['title'] ?? '',
+    description: json['description'] ?? '',
+    status: json['status'] ?? 'P',
+    );
+    }
+
+    Map<String, dynamic> toJson() {
+    return {
+    'id': ids,
+    'title': title,
+    'description': description,
+    'status': status,
+    };
+    }
+
+    Task copyWith({
+    String? id,
+    String? title,
+    String? description,
+    String? status,
+    }) {
+    return Task(
+    ids: id ?? this.ids,
+    title: title ?? this.title,
+    description: description ?? this.description,
+    status: status ?? this.status,
+    );
+    }
+    }
+
+    class TaskRepository {
+    List<Task> _tasks = [
+    Task(
+    ids: '1',
+    title: 'Learn Flutter',
+    description: 'Study Widgets',
+    status: 'P',
+    ),
+    Task(
+    ids: '2',
+    title: 'Build App',
+    description: 'Create todo app',
+    status: 'C',
+    ),
+    ];
+
+    Future<List<Task>> fetchAllTasks() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository: Fetching all the tasks");
+    return List.from(_tasks);
+    }
+
+    Future<List<Task>> fetchPendingTasks() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository Fetching PENDING tasks");
+    return _tasks.where((tasks) => tasks.status == 'P').toList();
+    }
+
+    Future<List<Task>> fetchCompletedTasks() async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository : Fetching completed tasks");
+    return _tasks.where((tasks) => tasks.status == 'C').toList();
+    }
+
+    Future<Task> createTask(String title, String description) async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository : Creating new task");
+    final newTask = Task(
+    ids: DateTime.now().millisecondsSinceEpoch.toString(),
+    title: title,
+    description: description,
+    status: 'P',
+    );
+
+    _tasks.add(newTask);
+    return newTask;
+    }
+
+    Future<void> completeTask(String taskId) async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository: Completed Tasks : $taskId");
+
+    final index = _tasks.indexWhere((t) => t.ids == taskId);
+    if (index != -1) {
+    _tasks[index] = _tasks[index].copyWith(status: 'C');
+    }
+    }
+
+    Future<void> deleteTask(String taskId) async {
+    await Future.delayed(Duration(milliseconds: 300));
+    print("Repository : Deleting Tasks : $taskId");
+    _tasks.removeWhere((t) => t.ids == taskId);
+    }
+    }
+
+    final taskRepositoryProvider = Provider<TaskRepository>((ref) {
+    print("Provider : Creating TaskRepository");
+    return TaskRepository();
+    });
+
+// ============================================================================
+// OPTIMIZED TASK STATE MANAGEMENT
+// ============================================================================
+
+    class TasksState {
+    final List<Task> tasks;
+    final bool isLoading;
+    final String? error;
+
+    TasksState({required this.tasks, this.isLoading = false, this.error});
+
+    TasksState copyWith({List<Task>? tasks, bool? isLoading, String? error}) {
+    return TasksState(
+    tasks: tasks ?? this.tasks,
+    isLoading: isLoading ?? this.isLoading,
+    error: error ?? this.error,
+    );
+    }
+
+    List<Task> get pendingTasks =>
+    tasks.where((task) => task.status == 'P').toList();
+
+    List<Task> get completedTasks =>
+    tasks.where((task) => task.status == 'C').toList();
+    }
+
+    class TasksNotifier extends StateNotifier<TasksState> {
+    final TaskRepository _repository;
+
+    TasksNotifier(this._repository) : super(TasksState(tasks: [])) {
+    loadTasks();
+    }
+
+    Future<void> loadTasks() async {
+    state = state.copyWith(isLoading: true);
+    try {
+    final tasks = await _repository.fetchAllTasks();
+    state = TasksState(tasks: tasks, isLoading: false);
+    } catch (e) {
+    state = state.copyWith(isLoading: false, error: e.toString());
+    }
+    }
+
+    Future<void> createTask(String title, String description) async {
+    try {
+    final newTask = await _repository.createTask(title, description);
+    // Optimistic update - add immediately to UI
+    state = state.copyWith(tasks: [...state.tasks, newTask]);
+    } catch (e) {
+    state = state.copyWith(error: e.toString());
+    rethrow;
+    }
+    }
+
+    Future<void> completeTask(String taskId) async {
+    // Optimistic update - update UI immediately
+    final updatedTasks = state.tasks.map((task) {
+    if (task.ids == taskId) {
+    return task.copyWith(status: 'C');
+    }
+    return task;
+    }).toList();
+
+    state = state.copyWith(tasks: updatedTasks);
+
+    try {
+    await _repository.completeTask(taskId);
+    } catch (e) {
+    // Rollback on error
+    await loadTasks();
+    rethrow;
+    }
+    }
+
+    Future<void> deleteTask(String taskId) async {
+    // Optimistic update - remove immediately from UI
+    final updatedTasks = state.tasks
+        .where((task) => task.ids != taskId)
+        .toList();
+    state = state.copyWith(tasks: updatedTasks);
+
+    try {
+    await _repository.deleteTask(taskId);
+    } catch (e) {
+    // Rollback on error
+    await loadTasks();
+    rethrow;
+    }
+    }
+    }
+
+    final tasksProvider = StateNotifierProvider<TasksNotifier, TasksState>((ref) {
+    final repository = ref.watch(taskRepositoryProvider);
+    return TasksNotifier(repository);
+    });
+
+// ============================================================================
+// MAIN APP
+// ============================================================================
+    void main() {
+    runApp(const ProviderScope(child: MyApp()));
+    }
+
+    class MyApp extends StatelessWidget {
+    const MyApp({super.key});
+    @override
+    Widget build(BuildContext context) {
+    return MaterialApp(
+    title: 'Task Manager',
+    debugShowCheckedModeBanner: false,
+    theme: ThemeData(primaryColor: Colors.blue, useMaterial3: true),
+
+    home: const TaskHomePage(),
+    );
+    }
+    }
+
+    class TaskHomePage extends StatelessWidget {
+    const TaskHomePage({super.key});
+
+    @override
+    Widget build(BuildContext context) {
+    return DefaultTabController(
+    length: 2,
+    child: Scaffold(
+    appBar: AppBar(
+    title: const Text('Task Manager'),
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+    bottom: const TabBar(
+    labelColor: Colors.red,
+    unselectedLabelColor: Colors.black,
+    indicatorColor: Colors.yellow,
+    tabs: [
+    Tab(icon: Icon(Icons.pending_actions), text: 'Operating'),
+    Tab(icon: Icon(Icons.check_circle), text: 'Finished'),
+    ],
+    ),
+    ),
+    body: const TabBarView(
+    children: [PendingTaskPage(), CompletedTaskPage()],
+    ),
+
+    floatingActionButton: FloatingActionButton.extended(
+    onPressed: () {
+    Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const CreateTaskPage()),
+    );
+    },
+    icon: const Icon(Icons.upload),
+
+    label: const Text('New Task'),
+    backgroundColor: Colors.blue,
+    ),
+    ),
+    );
+    }
+    }
+
+    class PendingTaskPage extends ConsumerWidget {
+    const PendingTaskPage({super.key});
+    @override
+    Widget build(BuildContext context, WidgetRef ref) {
+    // TODO: implement build
+
+    final taskState = ref.watch(tasksProvider);
+    if (taskState.isLoading && taskState.tasks.isEmpty) {
+    return const Center(child: CircularProgressIndicator());
+    }
+
+    if (taskState.error != null && taskState.tasks.isEmpty) {
+    return Center(
+    child: Text(
+    'Error :${taskState.error}',
+    style: const TextStyle(color: Colors.red),
+    ),
+    );
+    }
+    final pendingTasks = taskState.pendingTasks;
+    if (pendingTasks.isEmpty) {
+    return Center(
+    child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+
+    children: [
+    Icon(Icons.inbox, size: 80, color: Colors.black),
+    SizedBox(height: 16),
+    Text(
+    'No Pending tasks',
+    style: TextStyle(fontSize: 18, color: Colors.black),
+    ),
+    ],
+    ),
+    );
+    }
+
+    return ListView.builder(
+    padding: EdgeInsets.all(16),
+    itemCount: pendingTasks.length,
+    itemBuilder: (context, index) {
+    final task = pendingTasks[index];
+    return TaskCard(task: task, isPending: true, key: ValueKey(task.ids));
+    },
+    );
+    }
+    }
+
+    class CompletedTaskPage extends ConsumerWidget {
+    const CompletedTaskPage({super.key});
+    @override
+    Widget build(BuildContext context, WidgetRef ref) {
+    // TODO: implement build
+
+    return Scaffold();
+    }
+    }
+
+    class TaskCard extends ConsumerWidget {
+    const TaskCard({super.key, required this.task, required this.isPending});
+    final Task task;
+    final bool isPending;
+
+    @override
+    Widget build(BuildContext context, WidgetRef ref) {
+    // TODO: implement build
+    return Card(
+    margin: const EdgeInsets.only(bottom: 12),
+    elevation: 2,
+    child: ListTile(
+    contentPadding: const EdgeInsets.all(16),
+    leading: CircleAvatar(
+    backgroundColor: isPending ? Colors.orange : Colors.green,
+    child: Icon(
+    isPending ? Icons.pending_actions : Icons.check_circle,
+    color: Colors.white,
+    ),
+    ),
+    title: Text(
+    task.title,
+    style: TextStyle(
+    fontWeight: FontWeight.bold,
+    fontSize: 16,
+    decoration: isPending ? null : TextDecoration.lineThrough,
+    ),
+    ),
+
+    subtitle: Padding(
+    padding: EdgeInsets.only(top: 8),
+    child: Text(task.description),
+    ),
+    trailing: Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+    if (isPending)
+    IconButton(
+    icon: const Icon(Icons.check, color: Colors.green),
+    onPressed: () => _completeTask(context, ref, task.ids),
+    tooltip: 'Mark as Finished #message',
+    ),
+    IconButton(
+    icon: const Icon(Icons.delete, color: Colors.red),
+    onPressed: () => _deleteTask(context, ref, task.ids),
+    tooltip: 'Delete task',
+    ),
+    ],
+    ),
+    ),
+    );
+    }
+    }
+
+    Future<void> _completeTask(
+    BuildContext context,
+    WidgetRef ref,
+    String taskId,
+    ) async {
+    try {
+    await ref.read(tasksProvider.notifier).completeTask(taskId);
+    if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+    content: Text("Task Completed "),
+    backgroundColor: Colors.green,
+    duration: Duration(seconds: 1),
+    ),
+    );
+    }
+    } catch (e) {
+    if (context.mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text("Error : $e"), backgroundColor: Colors.red),
+    );
+    }
+    }
+    }
+
+    Future<void> _deleteTask(
+    BuildContext context,
+    WidgetRef ref,
+    String taskId,
+    ) async {
+    final confirmed = await showDialog<bool>(
+    context: context,
+    builder: (dailogContext) {
+    return AlertDialog(title: const Text("Delete Task ##"));
+    },
+    );
+    }
+
+    class CreateTaskPage extends ConsumerStatefulWidget {
+    const CreateTaskPage({super.key});
+    @override
+    ConsumerState<CreateTaskPage> createState() => _CreateTaskPageState();
+    }
+
+    class _CreateTaskPageState extends ConsumerState<CreateTaskPage> {
+    final _formKey = GlobalKey<FormState>();
+    final _titleController = TextEditingController();
+
+    final _descriptionController = TextEditingController();
+    bool _isloading = false;
+
+    @override
+    Widget build(BuildContext context) {
+    return Scaffold(
+    appBar: AppBar(
+    title: const Text('Create New Task'),
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+    ),
+    body: SingleChildScrollView(
+    padding: const EdgeInsets.all(24),
+    child: Form(
+    key: _formKey,
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+    const Icon(Icons.task_alt, size: 80, color: Colors.blue),
+    const SizedBox(height: 32),
+    TextFormField(
+    controller: _titleController,
+    decoration: InputDecoration(
+    labelText: 'Task Title',
+    hintText: 'Enter task title',
+    prefixIcon: const Icon(Icons.title),
+    border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    ),
+    validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+    return 'Please enter a title';
+    }
+    return null;
+    },
+    ),
+    const SizedBox(height: 20),
+    TextFormField(
+    controller: _descriptionController,
+    maxLines: 5,
+    decoration: InputDecoration(
+    labelText: ' Description',
+    hintText: 'Write a Task Description',
+    prefixIcon: const Icon(Icons.description),
+    alignLabelWithHint: true,
+    border: OutlineInputBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    ),
+    validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+    return 'Please enter a description';
+    }
+    return null;
+    },
+    ),
+    const SizedBox(height: 32),
+    ElevatedButton(
+    onPressed: _isloading ? null : _createTask,
+    style: ElevatedButton.styleFrom(
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+    padding: const EdgeInsets.symmetric(vertical: 16),
+    shape: RoundedRectangleBorder(
+    borderRadius: BorderRadius.circular(12),
+    ),
+    ),
+    child: _isloading
+    ? const SizedBox(
+    height: 20,
+    width: 20,
+    child: CircularProgressIndicator(
+    strokeWidth: 2,
+    color: Colors.white,
+    ),
+    )
+        : const Text('Create TAsk', style: TextStyle(fontSize: 16)),
+    ),
+    ],
+    ),
+    ),
+    ),
+    );
+
+
+    }
+    //========== changes to see on github =============
+    Future<void> _createTask()async{
+    if(_formKey.currentState!.validate()){
+    setState(() => _isloading = true);
+    try{
+    await ref.read(tasksProvider.notifier).createTask(
+    _titleController.text.trim(),
+    _descriptionController.text.trim(),
+
+    );
+
+
+    if(mounted){
+
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+    content:  const Text("Task Created Successfully 1000000"),
+    backgroundColor: Colors.black,
+    )
+
+    );
+    Navigator.pop(context);
+
+
+    }
+
+
+    }catch(e){
+    if(mounted){
+    setState(() =>
+    _isloading = false
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error are here :$e'),
+    backgroundColor: Colors.red,)
+
+
+    );
+
+
+    }
+    }
+
+    }
+
+    // little test changes
+    Future<void> _createTaskss()async {
+    if (_formKey.currentState!.validate()) {
+    setState(() => _isloading = true);
+    try {
+    await ref.read(tasksProvider.notifier).createTask(
+    _titleController.text.trim(),
+    _descriptionController.text.trim(),
+
+    );
+
+
+    if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+    content: const Text("Task Created Successfully 1000000"),
+    backgroundColor: Colors.black,
+    )
+
+    );
+    Navigator.pop(context);
+    }
+    } catch (e) {
+    if (mounted) {
+    setState(() =>
+    _isloading = false
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error are here :$e'),
+    backgroundColor: Colors.red,)
+
+
+    );
+    }
+    }
+    }
+
+    Future<void> _createTaskchange() async {
+    if (_formKey.currentState!.validate()) {
+    setState(() => _isloading = true);
+    try {
+    await ref.read(tasksProvider.notifier).createTask(
+    _titleController.text.trim(),
+    _descriptionController.text.trim(),
+
+    );
+
+
+    if (mounted) {
+    ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+    content: const Text("Task Created Successfully 1000000"),
+    backgroundColor: Colors.black,
+    )
+
+    );
+    Navigator.pop(context);
+    }
+    } catch (e) {
+    if (mounted) {
+    setState(() =>
+    _isloading = false
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text('Error are here :$e'),
+    backgroundColor: Colors.red,)
+
+
+    );
+    }
+    }
+    }
+    }
+    }

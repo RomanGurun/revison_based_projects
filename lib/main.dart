@@ -6,13 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 // ============================================================================
 
 class Task {
-  final String id;
+  final String ids;
   final String title;
   final String description;
   final String status;
 
   Task({
-    required this.id,
+    required this.ids,
     required this.title,
     required this.description,
     required this.status,
@@ -20,7 +20,7 @@ class Task {
 
   factory Task.fromJson(Map<String, dynamic> json) {
     return Task(
-      id: json['id'].toString(),
+      ids: json['id'].toString(),
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       status: json['status'] ?? 'P',
@@ -29,7 +29,7 @@ class Task {
 
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
+      'id': ids,
       'title': title,
       'description': description,
       'status': status,
@@ -43,7 +43,7 @@ class Task {
     String? status,
   }) {
     return Task(
-      id: id ?? this.id,
+      ids: id ?? this.ids,
       title: title ?? this.title,
       description: description ?? this.description,
       status: status ?? this.status,
@@ -54,13 +54,13 @@ class Task {
 class TaskRepository {
   List<Task> _tasks = [
     Task(
-      id: '1',
+      ids: '1',
       title: 'Learn Flutter',
       description: 'Study Widgets',
       status: 'P',
     ),
     Task(
-      id: '2',
+      ids: '2',
       title: 'Build App',
       description: 'Create todo app',
       status: 'C',
@@ -89,7 +89,7 @@ class TaskRepository {
     await Future.delayed(Duration(milliseconds: 300));
     print("Repository : Creating new task");
     final newTask = Task(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      ids: DateTime.now().millisecondsSinceEpoch.toString(),
       title: title,
       description: description,
       status: 'P',
@@ -103,7 +103,7 @@ class TaskRepository {
     await Future.delayed(Duration(milliseconds: 300));
     print("Repository: Completed Tasks : $taskId");
 
-    final index = _tasks.indexWhere((t) => t.id == taskId);
+    final index = _tasks.indexWhere((t) => t.ids == taskId);
     if (index != -1) {
       _tasks[index] = _tasks[index].copyWith(status: 'C');
     }
@@ -112,7 +112,7 @@ class TaskRepository {
   Future<void> deleteTask(String taskId) async {
     await Future.delayed(Duration(milliseconds: 300));
     print("Repository : Deleting Tasks : $taskId");
-    _tasks.removeWhere((t) => t.id == taskId);
+    _tasks.removeWhere((t) => t.ids == taskId);
   }
 }
 
@@ -178,7 +178,7 @@ class TasksNotifier extends StateNotifier<TasksState> {
   Future<void> completeTask(String taskId) async {
     // Optimistic update - update UI immediately
     final updatedTasks = state.tasks.map((task) {
-      if (task.id == taskId) {
+      if (task.ids == taskId) {
         return task.copyWith(status: 'C');
       }
       return task;
@@ -198,7 +198,7 @@ class TasksNotifier extends StateNotifier<TasksState> {
   Future<void> deleteTask(String taskId) async {
     // Optimistic update - remove immediately from UI
     final updatedTasks = state.tasks
-        .where((task) => task.id != taskId)
+        .where((task) => task.ids != taskId)
         .toList();
     state = state.copyWith(tasks: updatedTasks);
 
@@ -323,7 +323,7 @@ class PendingTaskPage extends ConsumerWidget {
       itemCount: pendingTasks.length,
       itemBuilder: (context, index) {
         final task = pendingTasks[index];
-        return TaskCard(task: task, isPending: true, key: ValueKey(task.id));
+        return TaskCard(task: task, isPending: true, key: ValueKey(task.ids));
       },
     );
   }
@@ -378,12 +378,12 @@ class TaskCard extends ConsumerWidget {
             if (isPending)
               IconButton(
                 icon: const Icon(Icons.check, color: Colors.green),
-                onPressed: () => _completeTask(context, ref, task.id),
+                onPressed: () => _completeTask(context, ref, task.ids),
                 tooltip: 'Mark as Finished #message',
               ),
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () => _deleteTask(context, ref, task.id),
+              onPressed: () => _deleteTask(context, ref, task.ids),
               tooltip: 'Delete task',
             ),
           ],
@@ -575,10 +575,10 @@ content:  const Text("Task Created Successfully 1000000"),
     }
 
   // little test changes
-    Future<void> _createTaskss()async{
-      if(_formKey.currentState!.validate()){
+    Future<void> _createTaskss()async {
+      if (_formKey.currentState!.validate()) {
         setState(() => _isloading = true);
-        try{
+        try {
           await ref.read(tasksProvider.notifier).createTask(
             _titleController.text.trim(),
             _descriptionController.text.trim(),
@@ -586,23 +586,18 @@ content:  const Text("Task Created Successfully 1000000"),
           );
 
 
-          if(mounted){
-
+          if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content:  const Text("Task Created Successfully 1000000"),
+                  content: const Text("Task Created Successfully 1000000"),
                   backgroundColor: Colors.black,
                 )
 
             );
             Navigator.pop(context);
-
-
           }
-
-
-        }catch(e){
-          if(mounted){
+        } catch (e) {
+          if (mounted) {
             setState(() =>
             _isloading = false
             );
@@ -613,17 +608,14 @@ content:  const Text("Task Created Successfully 1000000"),
 
 
             );
-
-
           }
         }
-
       }
 
-      Future<void> _createTaskchange()async{
-        if(_formKey.currentState!.validate()){
+      Future<void> _createTaskchange() async {
+        if (_formKey.currentState!.validate()) {
           setState(() => _isloading = true);
-          try{
+          try {
             await ref.read(tasksProvider.notifier).createTask(
               _titleController.text.trim(),
               _descriptionController.text.trim(),
@@ -631,23 +623,18 @@ content:  const Text("Task Created Successfully 1000000"),
             );
 
 
-            if(mounted){
-
+            if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content:  const Text("Task Created Successfully 1000000"),
+                    content: const Text("Task Created Successfully 1000000"),
                     backgroundColor: Colors.black,
                   )
 
               );
               Navigator.pop(context);
-
-
             }
-
-
-          }catch(e){
-            if(mounted){
+          } catch (e) {
+            if (mounted) {
               setState(() =>
               _isloading = false
               );
@@ -658,23 +645,8 @@ content:  const Text("Task Created Successfully 1000000"),
 
 
               );
-
-
             }
           }
-
         }
-
-
-
       }
-
-
-
-
-
-
-
-
-
-}
+    }

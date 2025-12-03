@@ -574,9 +574,100 @@ content:  const Text("Task Created Successfully 1000000"),
 
     }
 
+  // little test changes
+    Future<void> _createTaskss()async{
+      if(_formKey.currentState!.validate()){
+        setState(() => _isloading = true);
+        try{
+          await ref.read(tasksProvider.notifier).createTask(
+            _titleController.text.trim(),
+            _descriptionController.text.trim(),
+
+          );
 
 
-  }
+          if(mounted){
+
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content:  const Text("Task Created Successfully 1000000"),
+                  backgroundColor: Colors.black,
+                )
+
+            );
+            Navigator.pop(context);
+
+
+          }
+
+
+        }catch(e){
+          if(mounted){
+            setState(() =>
+            _isloading = false
+            );
+
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error are here :$e'),
+                  backgroundColor: Colors.red,)
+
+
+            );
+
+
+          }
+        }
+
+      }
+
+      Future<void> _createTaskchange()async{
+        if(_formKey.currentState!.validate()){
+          setState(() => _isloading = true);
+          try{
+            await ref.read(tasksProvider.notifier).createTask(
+              _titleController.text.trim(),
+              _descriptionController.text.trim(),
+
+            );
+
+
+            if(mounted){
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content:  const Text("Task Created Successfully 1000000"),
+                    backgroundColor: Colors.black,
+                  )
+
+              );
+              Navigator.pop(context);
+
+
+            }
+
+
+          }catch(e){
+            if(mounted){
+              setState(() =>
+              _isloading = false
+              );
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error are here :$e'),
+                    backgroundColor: Colors.red,)
+
+
+              );
+
+
+            }
+          }
+
+        }
+
+
+
+      }
 
 
 

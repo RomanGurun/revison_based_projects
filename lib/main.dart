@@ -10,6 +10,7 @@ class Task {
   final String bytle;
   final String description;
   final String stats;
+  final String status;
 
   Task({
     required this.ids,

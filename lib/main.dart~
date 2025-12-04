@@ -7,9 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Task {
   final String ids;
-  final String title;
+  final String bytle;
   final String description;
-  final String status;
+  final String stats;
 
   Task({
     required this.ids,

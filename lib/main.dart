@@ -7,8 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class Task {
   final String ids;
-  final String title;
+  final String bytle;
   final String description;
+  final String stats;
   final String status;
 
   Task({

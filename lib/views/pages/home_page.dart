@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-// Welcome Section
+            // Welcome Section
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -41,10 +41,7 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 8),
                   const Text(
                     'Explore our latest products and deals',
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
-                    ),
+                    style: TextStyle(color: Colors.white70, fontSize: 14),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -65,13 +62,10 @@ class HomePage extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-// Quick Actions
+            //         Quick Action
             const Text(
               'Quick Actions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Row(
@@ -83,7 +77,7 @@ class HomePage extends StatelessWidget {
                     title: 'Start Selling',
                     color: Colors.orange,
                     onTap: () {
-                      print('Start Selling Tapped');
+                      print("Start Selling Tapped");
                     },
                   ),
                 ),
@@ -92,8 +86,8 @@ class HomePage extends StatelessWidget {
                   child: _buildActionCard(
                     context,
                     icon: Icons.shopping_bag,
-                    title: 'Buy Products',
-                    color: Colors.blue,
+                    title: 'Kinna mero product',
+                    color: Colors.green,
                     onTap: () {
                       print('Buy Products Tapped');
                     },
@@ -102,15 +96,10 @@ class HomePage extends StatelessWidget {
               ],
             ),
 
-            const SizedBox(height: 24),
-
-// Featured Products
+            //   Featured Products
             const Text(
-              'Featured Products',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              "Featured Products",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -123,24 +112,31 @@ class HomePage extends StatelessWidget {
                 },
               ),
             ),
+            const SizedBox(height: 16),
 
-            const SizedBox(height: 24),
-
-// Categories
+            // SizedBox(
+            //   height: 226,
+            //   child:ListView.builder(
+            //     scrollDirection: Axis.horizontal,
+            //     itemCount:10,
+            //     itemBuilder:(context,index){
+            //       return _buildProductCard(context, index);
+            //     }
+            //   )
+            // )
             const Text(
               'Categories',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 4,
+
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
+              childAspectRatio: 0.87,
               children: [
                 _buildCategoryItem(Icons.phone_android, 'Electronics'),
                 _buildCategoryItem(Icons.checkroom, 'Fashion'),
@@ -152,19 +148,36 @@ class HomePage extends StatelessWidget {
                 _buildCategoryItem(Icons.more_horiz, 'More'),
               ],
             ),
+            const SizedBox(height: 16),
+
+            // GridView.count(
+            //   shrinkWrap: true,
+            //   physics: const NeverScrollableScrollPhysics(),
+            //   crossAxisCount: 4,
+            //   mainAxisSpacing: 10,
+            //   crossAxisSpacing: 70,
+            //   childAspectRatio: 0.3,
+            //
+            //   children: [
+            //     _buildCategoryItem(Icons.eighteen_mp, 'elighteen mp'),
+            //     _buildCategoryItem(Icons.eighteen_mp_outlined, 'mp_outlined'),
+            //   ],
+            // ),
           ],
         ),
       ),
     );
+
+    // Quick Actions
   }
 
   Widget _buildActionCard(
-      BuildContext context, {
-        required IconData icon,
-        required String title,
-        required Color color,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -176,7 +189,14 @@ class HomePage extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 40, color: color),
+            IconButton(
+              icon:Icon(icon,size:40,color:color),
+              onPressed: (){
+
+              },
+            ),
+
+
             const SizedBox(height: 12),
             Text(
               title,
@@ -220,11 +240,10 @@ class HomePage extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Icon(
-                Icons.image,
-                size: 50,
-                color: Colors.grey.shade400,
-              ),
+              child: IconButton(icon:Icon(Icons.image, size: 50, color: Colors.grey.shade400),
+              onPressed: (){
+// print('Icon of categories is clicked');
+              },),
             ),
           ),
           Padding(

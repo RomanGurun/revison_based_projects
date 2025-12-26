@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:totto/views/pages/orders_page.dart';
 import 'pages/home_page.dart';
 import 'pages/chat_page.dart' hide OrdersPage;
 // import 'pages/orders_page.dart';
@@ -17,10 +18,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<Widget> _pages = [
     const HomePage(),
-    // const ChatPage(),
-    // const OrdersPage(),
-    // const MarketplacePage(),
-    // const ProfilePage(),
+    const ChatPage(),
+    const OrderPage(),
+    const MarketPlacePage(),
+    const ProfilePage(),
   ];
 
   void _onItemTapped(int index) {
